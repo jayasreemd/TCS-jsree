@@ -12,6 +12,14 @@ class Country(BaseModel):
     languages: list[str]
 
 
+class City(BaseModel):
+    name: str
+    country_code: str
+    country: str
+    region: str
+    population: int
+
+
 COUNTRIES = [
     Country(code="IN", name="India", capital="New Delhi", region="Asia", population=1428627663, currency="Indian rupee", languages=["Hindi", "English"]),
     Country(code="US", name="United States", capital="Washington, D.C.", region="Americas", population=339996563, currency="United States dollar", languages=["English"]),
@@ -21,6 +29,28 @@ COUNTRIES = [
     Country(code="BR", name="Brazil", capital="Brasília", region="Americas", population=216422446, currency="Brazilian real", languages=["Portuguese"]),
     Country(code="DE", name="Germany", capital="Berlin", region="Europe", population=83294633, currency="Euro", languages=["German"]),
     Country(code="ZA", name="South Africa", capital="Pretoria", region="Africa", population=60414495, currency="South African rand", languages=["English", "Afrikaans", "Zulu"]),
+]
+
+
+CITIES = [
+    City(name="New Delhi", country_code="IN", country="India", region="Asia", population=249998),
+    City(name="Mumbai", country_code="IN", country="India", region="Asia", population=12442373),
+    City(name="Bengaluru", country_code="IN", country="India", region="Asia", population=8443675),
+    City(name="Washington, D.C.", country_code="US", country="United States", region="Americas", population=689545),
+    City(name="New York City", country_code="US", country="United States", region="Americas", population=8804190),
+    City(name="Los Angeles", country_code="US", country="United States", region="Americas", population=3898747),
+    City(name="London", country_code="GB", country="United Kingdom", region="Europe", population=8982000),
+    City(name="Manchester", country_code="GB", country="United Kingdom", region="Europe", population=553230),
+    City(name="Tokyo", country_code="JP", country="Japan", region="Asia", population=14094034),
+    City(name="Osaka", country_code="JP", country="Japan", region="Asia", population=2753862),
+    City(name="Canberra", country_code="AU", country="Australia", region="Oceania", population=456692),
+    City(name="Sydney", country_code="AU", country="Australia", region="Oceania", population=5312163),
+    City(name="Brasília", country_code="BR", country="Brazil", region="Americas", population=2817068),
+    City(name="São Paulo", country_code="BR", country="Brazil", region="Americas", population=11451245),
+    City(name="Berlin", country_code="DE", country="Germany", region="Europe", population=3644826),
+    City(name="Munich", country_code="DE", country="Germany", region="Europe", population=1488202),
+    City(name="Pretoria", country_code="ZA", country="South Africa", region="Africa", population=741651),
+    City(name="Cape Town", country_code="ZA", country="South Africa", region="Africa", population=433688),
 ]
 
 app = FastAPI(
@@ -57,6 +87,20 @@ def list_countries(
             or term in country.capital.casefold()
             or term == country.code.casefold()
         ]
+    return results
+
+
+@app.get("/cities", response_model=list[City], tags=["cities"])
+def list_cities(
+    country_code: str | None = Query(default=None, description="Filter by country code, e.g. IN"),
+    region: str | None = Query(default=None, description="Filter by region, e.g. Asia"),
+) -> list[City]:
+    """Return cities filtered by country code, region, or both."""
+    results = CITIES
+    if country_code:
+        results = [city for city in results if city.country_code.casefold() == country_code.casefold()]
+    if region:
+        results = [city for city in results if city.region.casefold() == region.casefold()]
     return results
 
 
